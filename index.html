@@ -686,7 +686,7 @@ function defaultCfg() {
       model:        '',
       lastService:  'Last service date & KM',
       km:           'KM reading',
-      parts:        'Column 11',
+      parts:        '',
       nextService:  '',
       notes:        'Any issue',
       vehiclePhoto: '',
@@ -900,8 +900,7 @@ function renderResult(row, plate, cols) {
     { key: 'riderId',     label: 'Rider ID',          icon: idIcon() },
     { key: 'lastService', label: 'Last service',      icon: calIcon() },
     { key: 'km',          label: 'Current KM',        icon: speedoIcon() },
-    { key: 'parts',       label: 'Parts changed',     icon: wrenchIcon() },
-    { key: 'nextService', label: 'Next service due',  icon: calIcon(), special: isOverdue ? 'overdue' : 'highlight' },
+      { key: 'nextService', label: 'Next service due',  icon: calIcon(), special: isOverdue ? 'overdue' : 'highlight' },
     { key: 'notes',       label: 'Notes',             icon: noteIcon() },
   ];
 
@@ -974,6 +973,13 @@ function showStatus(html, isHtml) {
 
 // ── Helpers ───────────────────────────────────────────────
 function parseGSheetDate(val) {
+  if (!val) return '';
+  // Handle plain date strings like "3/3/2026 13:12:48"
+  if (typeof val === 'string' && val.includes('/')) {
+    const d = new Date(val);
+    if (!isNaN(d)) return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+    return val;
+  }
   if (!val) return '';
   // Handle Google Sheets gviz Date() format: Date(yyyy,m,d,h,min,s) — month is 0-indexed
   const m = String(val).match(/Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)/);
