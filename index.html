@@ -673,7 +673,7 @@
 
 <script>
 // ── Config ──────────────────────────────────────────────
-const STORAGE_KEY = 'garage_cfg_v2';
+const STORAGE_KEY = 'garage_cfg_v3';
 const RECENT_KEY  = 'garage_recent';
 
 function defaultCfg() {
@@ -692,7 +692,7 @@ function defaultCfg() {
       vehiclePhoto: '',
       partsPhoto:   'Odometer pic',
       riderId:      'Rider ID',
-      timestamp:    'Timestamp'
+      timestamp:    ''
     }
   };
 }
@@ -895,7 +895,7 @@ function renderResult(row, plate, cols) {
   const isOverdue = nextService && isDatePast(nextService);
 
   const fields = [
-    { key: 'timestamp',   label: 'Recorded on',      icon: calIcon() },
+
     { key: 'owner',       label: 'Owner',             icon: personIcon() },
     { key: 'riderId',     label: 'Rider ID',          icon: idIcon() },
     { key: 'lastService', label: 'Last service',      icon: calIcon() },
@@ -973,6 +973,17 @@ function showStatus(html, isHtml) {
 }
 
 // ── Helpers ───────────────────────────────────────────────
+function parseGSheetDate(val) {
+  if (!val) return '';
+  // Handle Google Sheets gviz Date() format: Date(yyyy,m,d,h,min,s) — month is 0-indexed
+  const m = String(val).match(/Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)/);
+  if (m) {
+    const d = new Date(+m[1], +m[2], +m[3], +(m[4]||0), +(m[5]||0), +(m[6]||0));
+    return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  }
+  return val;
+}
+
 function isDatePast(dateStr) {
   const d = new Date(dateStr);
   return !isNaN(d) && d < new Date();
