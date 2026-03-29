@@ -4,573 +4,103 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Garage Lookup</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0f0f0f;
-    --surface: #1a1a1a;
-    --surface2: #232323;
-    --border: #2e2e2e;
-    --accent: #f0a500;
-    --accent-dim: rgba(240,165,0,0.12);
-    --text: #f0ede8;
-    --muted: #888;
-    --success: #3dd68c;
-    --danger: #ff5f5f;
-    --radius: 12px;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Barlow', sans-serif;
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* ── Header ── */
-  header {
-    padding: 20px 20px 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .logo-mark {
-    width: 36px; height: 36px;
-    background: var(--accent);
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .logo-mark svg { width: 20px; height: 20px; }
-
-  .brand {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 700;
-    font-size: 20px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-  .brand span { color: var(--accent); }
-
-  /* ── Search area ── */
-  .search-wrap {
-    padding: 24px 20px 0;
-  }
-
-  .search-label {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 8px;
-  }
-
-  .search-box {
-    position: relative;
-    display: flex;
-    gap: 10px;
-  }
-
-  #plate-input {
-    flex: 1;
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    color: var(--text);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 14px 18px;
-    outline: none;
-    transition: border-color 0.2s;
-    caret-color: var(--accent);
-  }
-  #plate-input::placeholder { color: #3a3a3a; letter-spacing: 0.06em; }
-  #plate-input:focus { border-color: var(--accent); }
-
-  #search-btn {
-    background: var(--accent);
-    border: none;
-    border-radius: var(--radius);
-    width: 58px;
-    flex-shrink: 0;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.15s, transform 0.1s;
-    touch-action: manipulation;
-  }
-  #search-btn:active { transform: scale(0.95); background: #d49200; }
-  #search-btn svg { width: 22px; height: 22px; stroke: #000; }
-
-  /* ── Status ── */
-  #status {
-    padding: 14px 20px 0;
-    font-size: 13px;
-    color: var(--muted);
-    min-height: 36px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .spinner {
-    width: 16px; height: 16px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    flex-shrink: 0;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ── Result card ── */
-  #result {
-    padding: 16px 20px;
-    flex: 1;
-  }
-
-  .card {
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: 16px;
-    overflow: hidden;
-    animation: slideUp 0.25s ease;
-  }
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .card-header {
-    background: var(--surface2);
-    padding: 14px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .plate-badge {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    color: var(--accent);
-  }
-
-  .vehicle-model {
-    font-size: 13px;
-    color: var(--muted);
-    text-align: right;
-    line-height: 1.4;
-  }
-  .vehicle-model strong {
-    display: block;
-    color: var(--text);
-    font-size: 15px;
-    font-weight: 500;
-  }
-
-  .fields {
-    padding: 6px 0;
-  }
-
-  .field-row {
-    display: flex;
-    align-items: flex-start;
-    padding: 11px 18px;
-    border-bottom: 1px solid var(--border);
-    gap: 12px;
-  }
-  .field-row:last-child { border-bottom: none; }
-
-  .field-icon {
-    width: 32px; height: 32px;
-    background: var(--accent-dim);
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
-  .field-icon svg { width: 15px; height: 15px; stroke: var(--accent); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-
-  .field-label {
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 2px;
-    font-family: 'Barlow Condensed', sans-serif;
-  }
-  .field-value {
-    font-size: 15px;
-    color: var(--text);
-    font-weight: 500;
-    line-height: 1.4;
-  }
-  .field-value.empty { color: #444; font-style: italic; font-weight: 400; }
-
-  /* Next service highlight */
-  .field-row.highlight .field-icon { background: rgba(61,214,140,0.12); }
-  .field-row.highlight .field-icon svg { stroke: var(--success); }
-  .field-row.highlight .field-value { color: var(--success); }
-
-  .field-row.overdue .field-icon { background: rgba(255,95,95,0.12); }
-  .field-row.overdue .field-icon svg { stroke: var(--danger); }
-  .field-row.overdue .field-value { color: var(--danger); }
-
-  /* ── Not found ── */
-  .not-found {
-    text-align: center;
-    padding: 48px 20px;
-    animation: slideUp 0.2s ease;
-  }
-  .not-found-icon {
-    width: 56px; height: 56px;
-    background: var(--surface2);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 16px;
-  }
-  .not-found-icon svg { width: 24px; height: 24px; stroke: var(--muted); fill: none; stroke-width: 1.5; }
-  .not-found h3 { font-size: 17px; margin-bottom: 6px; }
-  .not-found p { font-size: 14px; color: var(--muted); }
-
-  /* ── Config modal ── */
-  .config-btn {
-    background: none; border: none; cursor: pointer;
-    color: var(--muted); padding: 4px; margin-left: auto;
-    display: flex; align-items: center;
-    transition: color 0.15s;
-  }
-  .config-btn:hover { color: var(--text); }
-  .config-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; }
-
-  .modal-backdrop {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.7);
-    display: flex; align-items: flex-end;
-    z-index: 100;
-    animation: fadeIn 0.15s ease;
-  }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-  .modal {
-    background: var(--surface);
-    border-radius: 20px 20px 0 0;
-    padding: 24px 20px 40px;
-    width: 100%;
-    border-top: 1px solid var(--border);
-    animation: slideUp 0.2s ease;
-  }
-
-  .modal h2 {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    margin-bottom: 18px;
-  }
-
-  .modal-field { margin-bottom: 14px; }
-  .modal-field label {
-    display: block;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--muted);
-    margin-bottom: 6px;
-    font-family: 'Barlow Condensed', sans-serif;
-  }
-  .modal-field input {
-    width: 100%;
-    background: var(--surface2);
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    color: var(--text);
-    font-family: 'Barlow', sans-serif;
-    font-size: 14px;
-    padding: 11px 14px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .modal-field input:focus { border-color: var(--accent); }
-
-  .modal-hint {
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.6;
-    margin-bottom: 18px;
-    background: var(--surface2);
-    border-radius: 10px;
-    padding: 12px 14px;
-    border-left: 3px solid var(--accent);
-  }
-  .modal-hint code {
-    background: var(--border);
-    border-radius: 4px;
-    padding: 1px 5px;
-    font-size: 11px;
-    color: var(--accent);
-  }
-
-  .modal-actions { display: flex; gap: 10px; margin-top: 6px; }
-
-  .btn-save {
-    flex: 1;
-    background: var(--accent);
-    color: #000;
-    border: none;
-    border-radius: 10px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 14px;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
-  .btn-save:active { background: #d49200; }
-
-  .btn-cancel {
-    background: var(--surface2);
-    color: var(--muted);
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 16px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    padding: 14px 20px;
-    cursor: pointer;
-  }
-
-  /* ── Setup prompt ── */
-  .setup-prompt {
-    margin: 24px 20px 0;
-    background: var(--accent-dim);
-    border: 1.5px solid rgba(240,165,0,0.25);
-    border-radius: var(--radius);
-    padding: 16px;
-  }
-  .setup-prompt p {
-    font-size: 14px;
-    line-height: 1.6;
-    color: var(--text);
-    margin-bottom: 12px;
-  }
-  .setup-prompt strong { color: var(--accent); }
-  .btn-setup {
-    background: var(--accent);
-    color: #000;
-    border: none;
-    border-radius: 8px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    padding: 10px 20px;
-    cursor: pointer;
-    width: 100%;
-  }
-
-  /* ── Images ── */
-  .images-section {
-    padding: 12px 18px 4px;
-    border-top: 1px solid var(--border);
-  }
-  .images-label {
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 10px;
-    font-family: 'Barlow Condensed', sans-serif;
-  }
-  .images-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-  .img-thumb-wrap {
-    position: relative;
-    border-radius: 10px;
-    overflow: hidden;
-    background: var(--surface2);
-    aspect-ratio: 4/3;
-    cursor: pointer;
-    border: 1px solid var(--border);
-  }
-  .img-thumb-wrap img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: opacity 0.2s;
-  }
-  .img-thumb-wrap:active { opacity: 0.8; }
-  .img-caption {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    background: linear-gradient(transparent, rgba(0,0,0,0.7));
-    padding: 20px 8px 7px;
-    font-size: 11px;
-    font-family: 'Barlow Condensed', sans-serif;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: #fff;
-  }
-  .img-loading {
-    width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .img-error {
-    width: 100%; height: 100%;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 6px;
-    color: var(--muted);
-    font-size: 12px;
-    padding: 10px;
-    text-align: center;
-  }
-  .img-error svg { width: 24px; height: 24px; stroke: var(--muted); fill: none; stroke-width: 1.5; }
-
-  /* ── Video ── */
-  .video-section {
-    padding: 12px 18px 4px;
-    border-top: 1px solid var(--border);
-  }
-  .video-label {
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 10px;
-    font-family: 'Barlow Condensed', sans-serif;
-  }
-  .video-btn {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--surface2);
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 16px;
-    cursor: pointer;
-    text-decoration: none;
-    color: var(--text);
-    transition: border-color 0.15s;
-    margin-bottom: 12px;
-    width: 100%;
-  }
-  .video-btn:active { border-color: var(--accent); }
-  .video-play-icon {
-    width: 36px; height: 36px;
-    background: var(--accent);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .video-play-icon svg { width: 14px; height: 14px; fill: #000; stroke: none; margin-left: 2px; }
-  .video-btn-text { font-size: 14px; font-weight: 500; }
-  .video-btn-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
-
-  /* ── Lightbox ── */
-  .lightbox {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.92);
-    z-index: 200;
-    display: flex; align-items: center; justify-content: center;
-    flex-direction: column;
-    animation: fadeIn 0.15s ease;
-    padding: 20px;
-  }
-  .lightbox img {
-    max-width: 100%; max-height: 80dvh;
-    border-radius: 10px;
-    object-fit: contain;
-  }
-  .lightbox-caption {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 13px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-top: 12px;
-  }
-  .lightbox-close {
-    position: absolute;
-    top: 16px; right: 16px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 50%;
-    width: 36px; height: 36px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    color: var(--text);
-  }
-  .lightbox-close svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
-
-  /* ── Recent searches ── */
-  .recent {
-    padding: 16px 20px 0;
-  }
-  .recent-label {
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 10px;
-    font-family: 'Barlow Condensed', sans-serif;
-  }
-  .recent-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .chip {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    color: var(--text);
-    padding: 6px 12px;
-    cursor: pointer;
-    transition: border-color 0.15s;
-  }
-  .chip:active { border-color: var(--accent); color: var(--accent); }
+:root {
+  --bg:#0f0f0f;--surface:#1a1a1a;--surface2:#232323;--border:#2e2e2e;
+  --accent:#f0a500;--accent-dim:rgba(240,165,0,0.12);--text:#f0ede8;
+  --muted:#888;--success:#3dd68c;--danger:#ff5f5f;--radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100dvh;display:flex;flex-direction:column}
+header{padding:20px 20px 0;display:flex;align-items:center;gap:10px}
+.logo-mark{width:36px;height:36px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-mark svg{width:20px;height:20px}
+.brand{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;letter-spacing:0.04em;text-transform:uppercase}
+.brand span{color:var(--accent)}
+.config-btn{background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;margin-left:auto;display:flex;align-items:center}
+.config-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8}
+.search-wrap{padding:24px 20px 0}
+.search-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.search-box{display:flex;gap:10px}
+#plate-input{flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:14px 18px;outline:none;transition:border-color 0.2s;caret-color:var(--accent)}
+#plate-input::placeholder{color:#3a3a3a}
+#plate-input:focus{border-color:var(--accent)}
+#search-btn{background:var(--accent);border:none;border-radius:var(--radius);width:58px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.1s}
+#search-btn:active{transform:scale(0.95);background:#d49200}
+#search-btn svg{width:22px;height:22px;stroke:#000;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+#status{padding:14px 20px 0;font-size:13px;color:var(--muted);min-height:36px;display:flex;align-items:center;gap:8px}
+.spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+#result{padding:16px 20px;flex:1}
+.card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;animation:slideUp 0.25s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.card-header{background:var(--surface2);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.plate-badge{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;letter-spacing:0.1em;color:var(--accent)}
+.fields{padding:6px 0}
+.field-row{display:flex;align-items:flex-start;padding:11px 18px;border-bottom:1px solid var(--border);gap:12px}
+.field-row:last-child{border-bottom:none}
+.field-icon{width:32px;height:32px;background:var(--accent-dim);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.field-icon svg{width:15px;height:15px;stroke:var(--accent);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.field-label{font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:2px;font-family:'Barlow Condensed',sans-serif}
+.field-value{font-size:15px;color:var(--text);font-weight:500;line-height:1.4}
+.field-value.empty{color:#444;font-style:italic;font-weight:400}
+.field-row.highlight .field-icon{background:rgba(61,214,140,0.12)}
+.field-row.highlight .field-icon svg{stroke:var(--success)}
+.field-row.highlight .field-value{color:var(--success)}
+.field-row.overdue .field-icon{background:rgba(255,95,95,0.12)}
+.field-row.overdue .field-icon svg{stroke:var(--danger)}
+.field-row.overdue .field-value{color:var(--danger)}
+.not-found{text-align:center;padding:48px 20px;animation:slideUp 0.2s ease}
+.not-found-icon{width:56px;height:56px;background:var(--surface2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.not-found-icon svg{width:24px;height:24px;stroke:var(--muted);fill:none;stroke-width:1.5}
+.not-found h3{font-size:17px;margin-bottom:6px}
+.not-found p{font-size:14px;color:var(--muted)}
+.images-section{padding:12px 18px 14px;border-top:1px solid var(--border)}
+.images-label{font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;font-family:'Barlow Condensed',sans-serif}
+.images-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.images-grid.single{grid-template-columns:1fr}
+.img-thumb-wrap{position:relative;border-radius:10px;overflow:hidden;background:var(--surface2);aspect-ratio:4/3;cursor:pointer;border:1px solid var(--border)}
+.img-thumb-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+.img-thumb-wrap:active{opacity:0.8}
+.img-caption{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.7));padding:20px 8px 7px;font-size:11px;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;text-transform:uppercase;color:#fff}
+.img-error{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--muted);font-size:12px;padding:10px;text-align:center}
+.img-error svg{width:24px;height:24px;stroke:var(--muted);fill:none;stroke-width:1.5}
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:200;display:flex;align-items:center;justify-content:center;flex-direction:column;animation:fadeIn 0.15s ease;padding:20px}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.lightbox img{max-width:100%;max-height:80dvh;border-radius:10px;object-fit:contain}
+.lightbox-caption{font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-top:12px}
+.lightbox-close{position:absolute;top:16px;right:16px;background:var(--surface);border:1px solid var(--border);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text)}
+.lightbox-close svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:flex-end;z-index:100;animation:fadeIn 0.15s ease}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;border-top:1px solid var(--border);animation:slideUp 0.2s ease;max-height:85dvh;overflow-y:auto}
+.modal h2{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:18px}
+.modal-field{margin-bottom:14px}
+.modal-field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px;font-family:'Barlow Condensed',sans-serif}
+.modal-field input{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;padding:11px 14px;outline:none;transition:border-color 0.2s}
+.modal-field input:focus{border-color:var(--accent)}
+.modal-hint{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:18px;background:var(--surface2);border-radius:10px;padding:12px 14px;border-left:3px solid var(--accent)}
+.modal-hint code{background:var(--border);border-radius:4px;padding:1px 5px;font-size:11px;color:var(--accent)}
+.modal-actions{display:flex;gap:10px;margin-top:6px}
+.btn-save{flex:1;background:var(--accent);color:#000;border:none;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:14px;cursor:pointer}
+.btn-cancel{background:var(--surface2);color:var(--muted);border:1.5px solid var(--border);border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;padding:14px 20px;cursor:pointer}
+.recent{padding:16px 20px 0}
+.recent-label{font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;font-family:'Barlow Condensed',sans-serif}
+.recent-chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--surface);border:1px solid var(--border);border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;letter-spacing:0.08em;color:var(--text);padding:6px 12px;cursor:pointer}
+.chip:active{border-color:var(--accent);color:var(--accent)}
 </style>
 </head>
 <body>
-
 <header>
   <div class="logo-mark">
     <svg viewBox="0 0 20 20" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="10" cy="10" r="7"/>
-      <path d="M10 6v4l2.5 2.5"/>
+      <circle cx="10" cy="10" r="7"/><path d="M10 6v4l2.5 2.5"/>
     </svg>
   </div>
   <div class="brand">Garage <span>Lookup</span></div>
-  <button class="config-btn" onclick="openConfig()" title="Settings">
+  <button class="config-btn" onclick="openConfig()">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
   </button>
 </header>
@@ -578,12 +108,9 @@
 <div class="search-wrap">
   <div class="search-label">Plate number</div>
   <div class="search-box">
-    <input id="plate-input" type="text" placeholder="e.g. 12345" autocomplete="off" autocorrect="off" spellcheck="false"
-      onkeydown="if(event.key==='Enter') doSearch()">
+    <input id="plate-input" type="text" placeholder="e.g. 362546" autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter')doSearch()">
     <button id="search-btn" onclick="doSearch()">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-      </svg>
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     </button>
   </div>
 </div>
@@ -592,430 +119,249 @@
 <div id="result"></div>
 <div id="recent-wrap"></div>
 
-<!-- Config modal -->
 <div id="modal" style="display:none">
-  <div class="modal-backdrop" onclick="closeConfig(event)">
-    <div class="modal" onclick="event.stopPropagation()">
-      <h2>⚙ Settings</h2>
-
+  <div class="modal-backdrop" onclick="if(event.target===this)closeConfig()">
+    <div class="modal">
+      <h2>Settings</h2>
       <div class="modal-hint">
-        <strong>How to connect your Google Sheet:</strong><br>
-        1. Open your Sheet → Share → <strong>Anyone with link can view</strong><br>
-        2. Copy the Sheet ID from the URL:<br>
-        <code>docs.google.com/spreadsheets/d/<strong>[SHEET ID]</strong>/edit</code><br>
-        3. Paste it below. Column names must match exactly.
+        Share your Google Sheet as <strong>"Anyone with the link — Viewer"</strong>, then paste the Sheet ID from the URL below.
       </div>
-
-      <div class="modal-field">
-        <label>Google Sheet ID</label>
-        <input id="cfg-sheet-id" type="text" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms">
-      </div>
-      <div class="modal-field">
-        <label>Sheet / Tab Name</label>
-        <input id="cfg-sheet-name" type="text" placeholder="Sheet1">
-      </div>
-      <div class="modal-field">
-        <label>Plate Number Column</label>
-        <input id="cfg-col-plate" type="text" placeholder="Plate">
-      </div>
-      <div class="modal-field">
-        <label>Owner Name Column</label>
-        <input id="cfg-col-owner" type="text" placeholder="Owner">
-      </div>
-      <div class="modal-field">
-        <label>Make & Model Column</label>
-        <input id="cfg-col-model" type="text" placeholder="Model">
-      </div>
-      <div class="modal-field">
-        <label>Last Service Date Column</label>
-        <input id="cfg-col-lastservice" type="text" placeholder="Last Service">
-      </div>
-      <div class="modal-field">
-        <label>Current KM Column</label>
-        <input id="cfg-col-km" type="text" placeholder="KM">
-      </div>
-      <div class="modal-field">
-        <label>Parts Changed Column</label>
-        <input id="cfg-col-parts" type="text" placeholder="Parts Changed">
-      </div>
-      <div class="modal-field">
-        <label>Next Service Due Column</label>
-        <input id="cfg-col-nextservice" type="text" placeholder="Next Service">
-      </div>
-      <div class="modal-field">
-        <label>Notes Column</label>
-        <input id="cfg-col-notes" type="text" placeholder="Notes">
-      </div>
-      <div class="modal-field">
-        <label>Parts Photo Column (Google Drive link)</label>
-        <input id="cfg-col-partsphoto" type="text" placeholder="Parts Photo">
-      </div>
-      <div class="modal-field">
-        <label>Vehicle Video Column (Google Drive link)</label>
-        <input id="cfg-col-vehiclephoto" type="text" placeholder="Full Vehicle Video">
-      </div>
-      <div class="modal-field">
-        <label>Rider ID Column</label>
-        <input id="cfg-col-riderid" type="text" placeholder="Rider ID">
-      </div>
-      <div class="modal-field">
-        <label>Timestamp Column</label>
-        <input id="cfg-col-timestamp" type="text" placeholder="Timestamp">
-      </div>
-
+      <div class="modal-field"><label>Google Sheet ID</label><input id="cfg-sid" type="text"></div>
+      <div class="modal-field"><label>Sheet Tab Name</label><input id="cfg-sname" type="text"></div>
+      <div class="modal-field"><label>Plate / Vehicle Number Column</label><input id="cfg-plate" type="text"></div>
+      <div class="modal-field"><label>Owner (Rider Name) Column</label><input id="cfg-owner" type="text"></div>
+      <div class="modal-field"><label>Rider ID Column</label><input id="cfg-rider" type="text"></div>
+      <div class="modal-field"><label>Last Service Column</label><input id="cfg-svc" type="text"></div>
+      <div class="modal-field"><label>KM Reading Column</label><input id="cfg-km" type="text"></div>
+      <div class="modal-field"><label>Next Service Due Column</label><input id="cfg-next" type="text"></div>
+      <div class="modal-field"><label>Notes / Any Issue Column</label><input id="cfg-notes" type="text"></div>
+      <div class="modal-field"><label>Odometer Photo Column</label><input id="cfg-photo" type="text"></div>
       <div class="modal-actions">
         <button class="btn-cancel" onclick="closeConfig()">Cancel</button>
-        <button class="btn-save" onclick="saveConfig()">Save & Connect</button>
+        <button class="btn-save" onclick="saveConfig()">Save</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-// ── Config ──────────────────────────────────────────────
-const STORAGE_KEY = 'garage_cfg_v3';
-const RECENT_KEY  = 'garage_recent';
+const SK = 'glookup_v1';
 
 function defaultCfg() {
   return {
-    sheetId: '1MqdzUn8pkuW8_mER_7p4mPoa-K9cRhiqX9x1QK3CU_Y',
+    sheetId:   '1MqdzUn8pkuW8_mER_7p4mPoa-K9cRhiqX9x1QK3CU_Y',
     sheetName: 'Form Responses 1',
     cols: {
-      plate:        'Vehicle Number',
-      owner:        'Rider Name',
-      model:        '',
-      lastService:  'Last service date & KM',
-      km:           'KM reading',
-      parts:        '',
-      nextService:  '',
-      notes:        'Any issue',
-      vehiclePhoto: '',
-      partsPhoto:   'Odometer pic',
-      riderId:      'Rider ID',
-      timestamp:    ''
+      plate:       'Vehicle Number',
+      owner:       'Rider Name',
+      riderId:     'Rider ID',
+      lastService: 'Last service date & KM',
+      km:          'KM reading',
+      nextService: '',
+      notes:       'Any issue',
+      photo:       'Odometer pic'
     }
   };
 }
 
 function loadCfg() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultCfg(); }
+  try { return JSON.parse(localStorage.getItem(SK)) || defaultCfg(); }
   catch { return defaultCfg(); }
 }
-
-function saveCfg(cfg) { localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg)); }
+function saveCfg(c) { localStorage.setItem(SK, JSON.stringify(c)); }
 
 function loadRecent() {
-  try { return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; }
+  try { return JSON.parse(localStorage.getItem(SK+'_r')) || []; }
   catch { return []; }
 }
-
-function addRecent(plate) {
-  let r = loadRecent().filter(p => p !== plate);
-  r.unshift(plate);
-  r = r.slice(0, 6);
-  localStorage.setItem(RECENT_KEY, JSON.stringify(r));
+function addRecent(p) {
+  let r = loadRecent().filter(x => x !== p);
+  r.unshift(p); r = r.slice(0,6);
+  localStorage.setItem(SK+'_r', JSON.stringify(r));
 }
 
-// ── Config modal ─────────────────────────────────────────
 function openConfig() {
-  const cfg = loadCfg();
-  document.getElementById('cfg-sheet-id').value    = cfg.sheetId || '';
-  document.getElementById('cfg-sheet-name').value  = cfg.sheetName || 'Sheet1';
-  document.getElementById('cfg-col-plate').value       = cfg.cols.plate || '';
-  document.getElementById('cfg-col-owner').value       = cfg.cols.owner || '';
-  document.getElementById('cfg-col-model').value       = cfg.cols.model || '';
-  document.getElementById('cfg-col-lastservice').value = cfg.cols.lastService || '';
-  document.getElementById('cfg-col-km').value          = cfg.cols.km || '';
-  document.getElementById('cfg-col-parts').value       = cfg.cols.parts || '';
-  document.getElementById('cfg-col-nextservice').value = cfg.cols.nextService || '';
-  document.getElementById('cfg-col-notes').value       = cfg.cols.notes || '';
-  document.getElementById('cfg-col-vehiclephoto').value = cfg.cols.vehiclePhoto || '';
-  document.getElementById('cfg-col-partsphoto').value   = cfg.cols.partsPhoto || '';
-  document.getElementById('cfg-col-riderid').value      = cfg.cols.riderId || '';
-  document.getElementById('cfg-col-timestamp').value    = cfg.cols.timestamp || '';
+  const c = loadCfg();
+  document.getElementById('cfg-sid').value   = c.sheetId;
+  document.getElementById('cfg-sname').value = c.sheetName;
+  document.getElementById('cfg-plate').value = c.cols.plate;
+  document.getElementById('cfg-owner').value = c.cols.owner;
+  document.getElementById('cfg-rider').value = c.cols.riderId;
+  document.getElementById('cfg-svc').value   = c.cols.lastService;
+  document.getElementById('cfg-km').value    = c.cols.km;
+  document.getElementById('cfg-next').value  = c.cols.nextService;
+  document.getElementById('cfg-notes').value = c.cols.notes;
+  document.getElementById('cfg-photo').value = c.cols.photo;
   document.getElementById('modal').style.display = 'flex';
 }
-
-function closeConfig(e) {
-  if (!e || e.target.classList.contains('modal-backdrop'))
-    document.getElementById('modal').style.display = 'none';
-}
-
+function closeConfig() { document.getElementById('modal').style.display = 'none'; }
 function saveConfig() {
-  const cfg = {
-    sheetId:   document.getElementById('cfg-sheet-id').value.trim(),
-    sheetName: document.getElementById('cfg-sheet-name').value.trim() || 'Sheet1',
+  saveCfg({
+    sheetId:   document.getElementById('cfg-sid').value.trim(),
+    sheetName: document.getElementById('cfg-sname').value.trim(),
     cols: {
-      plate:       document.getElementById('cfg-col-plate').value.trim(),
-      owner:       document.getElementById('cfg-col-owner').value.trim(),
-      model:       document.getElementById('cfg-col-model').value.trim(),
-      lastService: document.getElementById('cfg-col-lastservice').value.trim(),
-      km:          document.getElementById('cfg-col-km').value.trim(),
-      parts:       document.getElementById('cfg-col-parts').value.trim(),
-      nextService: document.getElementById('cfg-col-nextservice').value.trim(),
-      notes:       document.getElementById('cfg-col-notes').value.trim(),
-      vehiclePhoto: document.getElementById('cfg-col-vehiclephoto').value.trim(),
-      partsPhoto:   document.getElementById('cfg-col-partsphoto').value.trim(),
-      riderId:      document.getElementById('cfg-col-riderid').value.trim(),
-      timestamp:    document.getElementById('cfg-col-timestamp').value.trim()
+      plate:       document.getElementById('cfg-plate').value.trim(),
+      owner:       document.getElementById('cfg-owner').value.trim(),
+      riderId:     document.getElementById('cfg-rider').value.trim(),
+      lastService: document.getElementById('cfg-svc').value.trim(),
+      km:          document.getElementById('cfg-km').value.trim(),
+      nextService: document.getElementById('cfg-next').value.trim(),
+      notes:       document.getElementById('cfg-notes').value.trim(),
+      photo:       document.getElementById('cfg-photo').value.trim()
     }
-  };
-  saveCfg(cfg);
-  document.getElementById('modal').style.display = 'none';
-  document.getElementById('result').innerHTML = '';
-  document.getElementById('status').innerHTML = '';
-  renderRecent();
-  showStatus('✓ Settings saved. Ready to search.', false);
+  });
+  closeConfig();
+  setStatus('Settings saved.');
 }
 
-// ── Fetch from Google Sheets ─────────────────────────────
-async function fetchSheet(sheetId, sheetName) {
-  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('Could not reach Google Sheets');
-  const text = await res.text();
-  const json = JSON.parse(text.substring(47, text.length - 2));
-  return json;
+async function fetchSheet(id, name) {
+  const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(name)}`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error('Cannot reach Google Sheets. Check sharing settings.');
+  const t = await r.text();
+  return JSON.parse(t.substring(47, t.length - 2));
 }
 
-function parseSheet(json) {
+function parseRows(json) {
   const cols = json.table.cols.map(c => c.label || c.id);
-  const rows = json.table.rows.map(r =>
-    Object.fromEntries(cols.map((c, i) => [c, r.c[i]?.v ?? '']))
+  return json.table.rows.map(r =>
+    Object.fromEntries(cols.map((c,i) => [c, r.c && r.c[i] ? (r.c[i].f || r.c[i].v || '') : '']))
   );
-  return { cols, rows };
 }
 
-// ── Search ───────────────────────────────────────────────
+function fmtDate(val) {
+  if (!val) return '';
+  const s = String(val);
+  // Google gviz Date(yyyy,m,d) — month is 0-indexed
+  const m = s.match(/Date\((\d+),(\d+),(\d+)/);
+  if (m) {
+    const d = new Date(+m[1], +m[2], +m[3]);
+    return d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+  }
+  // Plain string dates like "1/27/2026"
+  if (/\d{1,2}\/\d{1,2}\/\d{4}/.test(s)) {
+    const d = new Date(s);
+    if (!isNaN(d)) return d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+  }
+  return s;
+}
+
+function driveThumb(url) {
+  if (!url) return '';
+  const m1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  const m2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  const id = (m1 && m1[1]) || (m2 && m2[1]);
+  return id ? `https://lh3.googleusercontent.com/d/${id}=w800` : url;
+}
+
+function openLightbox(url, cap) {
+  const lb = document.createElement('div');
+  lb.className = 'lightbox';
+  lb.innerHTML = `<button class="lightbox-close" onclick="this.parentElement.remove()"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button><img src="${url}" alt="${cap}"><div class="lightbox-caption">${cap}</div>`;
+  lb.onclick = e => { if (e.target === lb) lb.remove(); };
+  document.body.appendChild(lb);
+}
+
 async function doSearch() {
   const plate = document.getElementById('plate-input').value.trim().toUpperCase();
   if (!plate) return;
-
   const cfg = loadCfg();
   if (!cfg.sheetId) { openConfig(); return; }
 
-  showStatus('<span class="spinner"></span> Looking up ' + plate + '…', true);
+  setStatus('<span class="spinner"></span> Looking up ' + plate + '…');
   document.getElementById('result').innerHTML = '';
 
   try {
     const json = await fetchSheet(cfg.sheetId, cfg.sheetName);
-    const { rows } = parseSheet(json);
-
+    const rows = parseRows(json);
     const match = rows.find(r =>
       String(r[cfg.cols.plate] || '').trim().toUpperCase() === plate
     );
-
-    if (!match) {
-      showStatus('');
-      renderNotFound(plate);
-      return;
-    }
-
+    if (!match) { setStatus(''); renderNotFound(plate); return; }
     addRecent(plate);
     renderRecent();
-    showStatus('');
+    setStatus('');
     renderResult(match, plate, cfg.cols);
-
-  } catch(err) {
-    showStatus('⚠ ' + (err.message || 'Connection error. Check Sheet ID and sharing settings.'), false);
+  } catch(e) {
+    setStatus('Error: ' + e.message);
   }
 }
 
-// ── Google Drive link converter ──────────────────────────────
-function toDirectImg(url) {
-  if (!url) return '';
-  // Handle /file/d/ID/view
-  const m1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-  // Handle open?id=ID or ?id=ID or &id=ID
-  const m2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  const id = (m1 && m1[1]) || (m2 && m2[1]);
-  if (id) return 'https://lh3.googleusercontent.com/d/' + id + '=w800';
-  return url;
-}
-
-function renderImages(vehicleUrl, partsUrl) {
-  const imgs = [];
-  if (vehicleUrl && vehicleUrl.trim()) imgs.push({ url: toDirectImg(vehicleUrl), label: 'Vehicle' });
-  if (partsUrl && partsUrl.trim())     imgs.push({ url: toDirectImg(partsUrl),   label: 'Parts' });
-  if (!imgs.length) return '';
-
-  const thumbs = imgs.map(img => `
-    <div class="img-thumb-wrap" onclick="openLightbox('${img.url}','${img.label}')">
-      <img src="${img.url}" alt="${img.label}"
-        onerror="this.parentElement.innerHTML='<div class=\"img-error\"><svg viewBox=\"0 0 24 24\"><path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\"/><path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\"/></svg>Cannot load image</div>'">
-      <div class="img-caption">${img.label}</div>
-    </div>`).join('');
-
-  return `<div class="images-section">
-    <div class="images-label">Photos</div>
-    <div class="images-grid" style="${imgs.length===1?'grid-template-columns:1fr':''}">${thumbs}</div>
-  </div>`;
-}
-
-function renderVideo(videoUrl) {
-  if (!videoUrl) return '';
-  // Convert Google Drive share link to direct open link
-  const m1 = videoUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-  const m2 = videoUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  const id = (m1 && m1[1]) || (m2 && m2[1]);
-  const openUrl = id
-    ? `https://drive.google.com/file/d/${id}/view`
-    : videoUrl;
-  return `<div class="video-section">
-    <div class="video-label">Vehicle Video</div>
-    <a class="video-btn" href="${openUrl}" target="_blank" rel="noopener">
-      <div class="video-play-icon">
-        <svg viewBox="0 0 16 16"><polygon points="3,1 15,8 3,15"/></svg>
-      </div>
-      <div>
-        <div class="video-btn-text">Play video</div>
-        <div class="video-btn-sub">Opens in Google Drive</div>
-      </div>
-    </a>
-  </div>`;
-}
-
-function openLightbox(url, caption) {
-  const lb = document.createElement('div');
-  lb.className = 'lightbox';
-  lb.innerHTML = `
-    <button class="lightbox-close" onclick="this.parentElement.remove()">
-      <svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
-    </button>
-    <img src="${url}" alt="${caption}">
-    <div class="lightbox-caption">${caption}</div>`;
-  lb.addEventListener('click', e => { if (e.target === lb) lb.remove(); });
-  document.body.appendChild(lb);
-}
-
-// ── Render result ─────────────────────────────────────────
 function renderResult(row, plate, cols) {
-  const get = key => String(row[cols[key]] ?? '').trim();
-
-  const nextService = get('nextService');
-  const isOverdue = nextService && isDatePast(nextService);
+  const g = k => String(row[cols[k]] || '').trim();
+  const isOverdue = g('nextService') && new Date(g('nextService')) < new Date();
 
   const fields = [
-
-    { key: 'owner',       label: 'Owner',             icon: personIcon() },
-    { key: 'riderId',     label: 'Rider ID',          icon: idIcon() },
-    { key: 'lastService', label: 'Last service',      icon: calIcon() },
-    { key: 'km',          label: 'Current KM',        icon: speedoIcon() },
-      { key: 'nextService', label: 'Next service due',  icon: calIcon(), special: isOverdue ? 'overdue' : 'highlight' },
-    { key: 'notes',       label: 'Notes',             icon: noteIcon() },
+    { k:'owner',       label:'Owner',           icon:personSvg() },
+    { k:'riderId',     label:'Rider ID',        icon:idSvg() },
+    { k:'lastService', label:'Last service',    icon:calSvg(), fmt:fmtDate },
+    { k:'km',          label:'Current KM',      icon:speedoSvg() },
+    { k:'nextService', label:'Next service due',icon:calSvg(), fmt:fmtDate, cls: isOverdue ? 'overdue' : 'highlight' },
+    { k:'notes',       label:'Notes',           icon:noteSvg() },
   ];
 
-  const rowsHtml = fields.map(f => {
-    const val = get(f.key);
-    const cls = f.special && val ? ` ${f.special}` : '';
+  const rows = fields.map(f => {
+    let val = g(f.k);
+    if (f.fmt) val = f.fmt(val) || val;
+    const cls = (f.cls && val) ? ` ${f.cls}` : '';
     return `<div class="field-row${cls}">
       <div class="field-icon">${f.icon}</div>
-      <div>
-        <div class="field-label">${f.label}</div>
-        <div class="field-value${!val ? ' empty' : ''}">${val || '—'}</div>
-      </div>
+      <div><div class="field-label">${f.label}</div>
+      <div class="field-value${!val?' empty':''}">${val||'—'}</div></div>
     </div>`;
   }).join('');
 
-  const videoUrl        = get('vehiclePhoto');
-  const partsPhotoUrl   = get('partsPhoto');
-  const riderId         = get('riderId');
-  const timestamp       = get('timestamp');
-  const imagesHtml = renderImages('', partsPhotoUrl);
-  const videoHtml  = renderVideo(videoUrl);
+  const photoUrl = g('photo');
+  const thumbUrl = driveThumb(photoUrl);
+  const photoHtml = thumbUrl ? `
+    <div class="images-section">
+      <div class="images-label">Photos</div>
+      <div class="images-grid single">
+        <div class="img-thumb-wrap" onclick="openLightbox('${thumbUrl}','Odometer')">
+          <img src="${thumbUrl}" alt="Odometer"
+            onerror="this.parentElement.innerHTML='<div class=\\"img-error\\"><svg viewBox=\\"0 0 24 24\\"><circle cx=\\"11\\" cy=\\"11\\" r=\\"8\\"/><path d=\\"m21 21-4.35-4.35\\"/></svg>Photo unavailable<br><small>Check Drive sharing</small></div>'">
+          <div class="img-caption">Odometer</div>
+        </div>
+      </div>
+    </div>` : '';
 
   document.getElementById('result').innerHTML = `
     <div class="card">
       <div class="card-header">
         <div class="plate-badge">${plate}</div>
-        <div class="vehicle-model">
-          <strong>${get('model') || '—'}</strong>
-        </div>
       </div>
-      <div class="fields">${rowsHtml}</div>
-      ${imagesHtml}
-      ${videoHtml}
+      <div class="fields">${rows}</div>
+      ${photoHtml}
     </div>`;
 }
 
 function renderNotFound(plate) {
   document.getElementById('result').innerHTML = `
     <div class="not-found">
-      <div class="not-found-icon">
-        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6M11 8v6"/></svg>
-      </div>
-      <h3>Not found</h3>
-      <p>No record for plate <strong>${plate}</strong></p>
+      <div class="not-found-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+      <h3>Not found</h3><p>No record for <strong>${plate}</strong></p>
     </div>`;
 }
 
-// ── Recent chips ──────────────────────────────────────────
 function renderRecent() {
-  const recent = loadRecent();
-  const wrap = document.getElementById('recent-wrap');
-  if (!recent.length) { wrap.innerHTML = ''; return; }
-  wrap.innerHTML = `<div class="recent">
-    <div class="recent-label">Recent</div>
-    <div class="recent-chips">
-      ${recent.map(p => `<div class="chip" onclick="searchPlate('${p}')">${p}</div>`).join('')}
-    </div>
-  </div>`;
+  const r = loadRecent();
+  document.getElementById('recent-wrap').innerHTML = r.length ? `
+    <div class="recent"><div class="recent-label">Recent</div>
+    <div class="recent-chips">${r.map(p=>`<div class="chip" onclick="searchPlate('${p}')">${p}</div>`).join('')}</div>
+    </div>` : '';
 }
 
-function searchPlate(plate) {
-  document.getElementById('plate-input').value = plate;
-  doSearch();
-}
+function searchPlate(p) { document.getElementById('plate-input').value=p; doSearch(); }
+function setStatus(h) { document.getElementById('status').innerHTML = h; }
 
-// ── Status ────────────────────────────────────────────────
-function showStatus(html, isHtml) {
-  document.getElementById('status').innerHTML = html;
-}
+function calSvg()    { return `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`; }
+function speedoSvg() { return `<svg viewBox="0 0 24 24"><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0-18 0"/><path d="M12 12l4-4"/><circle cx="12" cy="12" r="1" fill="var(--accent)" stroke="none"/></svg>`; }
+function noteSvg()   { return `<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`; }
+function personSvg() { return `<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`; }
+function idSvg()     { return `<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3h2a2 2 0 0 1 2 2v2M6 3H4a2 2 0 0 0-2 2v2"/><circle cx="9" cy="14" r="2"/><path d="M15 12h2M15 16h2M5 18c0-2 1.5-3 4-3s4 1 4 3"/></svg>`; }
 
-// ── Helpers ───────────────────────────────────────────────
-function parseGSheetDate(val) {
-  if (!val) return '';
-  const s = String(val);
-  // Google Sheets gviz format: Date(yyyy,m,d) or Date(yyyy,m,d,h,min,s) — month is 0-indexed
-  const m = s.match(/Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)/);
-  if (m) {
-    const d = new Date(+m[1], +m[2], +m[3]);
-    return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
-  }
-  // Plain date strings like "1/27/2026" or "3/7/2026 13:14:48"
-  if (s.match(/^\d{1,2}\/\d{1,2}\/\d{4}/)) {
-    const d = new Date(s);
-    if (!isNaN(d)) return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
-  }
-  return val;
-}
-
-function isDatePast(dateStr) {
-  const d = new Date(dateStr);
-  return !isNaN(d) && d < new Date();
-}
-
-function calIcon()    { return `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`; }
-function speedoIcon() { return `<svg viewBox="0 0 24 24"><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0-18 0"/><path d="M12 12l4-4"/><circle cx="12" cy="12" r="1" fill="var(--accent)" stroke="none"/></svg>`; }
-function wrenchIcon() { return `<svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`; }
-function noteIcon()   { return `<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`; }
-function idIcon() { return `<svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3h2a2 2 0 0 1 2 2v2M6 3H4a2 2 0 0 0-2 2v2"/><circle cx="9" cy="14" r="2"/><path d="M15 12h2M15 16h2M5 18c0-2 1.5-3 4-3s4 1 4 3"/></svg>`; }
-function personIcon() { return `<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`; }
-
-// ── Init ──────────────────────────────────────────────────
-(function init() {
-  const cfg = loadCfg();
-  if (!cfg.sheetId) {
-    document.getElementById('recent-wrap').innerHTML = `
-      <div class="setup-prompt">
-        <p>Connect your <strong>Google Sheet</strong> to start looking up vehicles. Takes about 2 minutes.</p>
-        <button class="btn-setup" onclick="openConfig()">Connect Google Sheet</button>
-      </div>`;
-  } else {
-    renderRecent();
-  }
-  document.getElementById('plate-input').focus();
-})();
+renderRecent();
+document.getElementById('plate-input').focus();
 </script>
 </body>
 </html>
