@@ -824,18 +824,19 @@ async function doSearch() {
 // ── Google Drive link converter ──────────────────────────────
 function toDirectImg(url) {
   if (!url) return '';
-  // Handle /file/d/ID/view and open?id=ID formats
+  // Handle /file/d/ID/view
   const m1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  // Handle open?id=ID or ?id=ID or &id=ID
   const m2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
   const id = (m1 && m1[1]) || (m2 && m2[1]);
-  if (id) return `https://drive.google.com/thumbnail?id=${id}&sz=w800`;
-  return url; // already direct or unknown format
+  if (id) return 'https://lh3.googleusercontent.com/d/' + id + '=w800';
+  return url;
 }
 
 function renderImages(vehicleUrl, partsUrl) {
   const imgs = [];
-  if (vehicleUrl) imgs.push({ url: toDirectImg(vehicleUrl), label: 'Vehicle' });
-  if (partsUrl)   imgs.push({ url: toDirectImg(partsUrl),   label: 'Parts' });
+  if (vehicleUrl && vehicleUrl.trim()) imgs.push({ url: toDirectImg(vehicleUrl), label: 'Vehicle' });
+  if (partsUrl && partsUrl.trim())     imgs.push({ url: toDirectImg(partsUrl),   label: 'Parts' });
   if (!imgs.length) return '';
 
   const thumbs = imgs.map(img => `
@@ -847,7 +848,7 @@ function renderImages(vehicleUrl, partsUrl) {
 
   return `<div class="images-section">
     <div class="images-label">Photos</div>
-    <div class="images-grid">${thumbs}</div>
+    <div class="images-grid" style="${imgs.length===1?'grid-template-columns:1fr':''}">${thumbs}</div>
   </div>`;
 }
 
@@ -974,18 +975,17 @@ function showStatus(html, isHtml) {
 // ── Helpers ───────────────────────────────────────────────
 function parseGSheetDate(val) {
   if (!val) return '';
-  // Handle plain date strings like "3/3/2026 13:12:48"
-  if (typeof val === 'string' && val.includes('/')) {
-    const d = new Date(val);
-    if (!isNaN(d)) return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
-    return val;
-  }
-  if (!val) return '';
-  // Handle Google Sheets gviz Date() format: Date(yyyy,m,d,h,min,s) — month is 0-indexed
-  const m = String(val).match(/Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)/);
+  const s = String(val);
+  // Google Sheets gviz format: Date(yyyy,m,d) or Date(yyyy,m,d,h,min,s) — month is 0-indexed
+  const m = s.match(/Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)/);
   if (m) {
-    const d = new Date(+m[1], +m[2], +m[3], +(m[4]||0), +(m[5]||0), +(m[6]||0));
-    return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    const d = new Date(+m[1], +m[2], +m[3]);
+    return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  }
+  // Plain date strings like "1/27/2026" or "3/7/2026 13:14:48"
+  if (s.match(/^\d{1,2}\/\d{1,2}\/\d{4}/)) {
+    const d = new Date(s);
+    if (!isNaN(d)) return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
   }
   return val;
 }
