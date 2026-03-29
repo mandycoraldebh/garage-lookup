@@ -90,6 +90,22 @@ header{padding:20px 20px 0;display:flex;align-items:center;gap:10px}
 .recent-chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{background:var(--surface);border:1px solid var(--border);border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;letter-spacing:0.08em;color:var(--text);padding:6px 12px;cursor:pointer}
 .chip:active{border-color:var(--accent);color:var(--accent)}
+
+/* ── Repair Log ── */
+.repair-section{padding:14px 18px;border-top:2px solid var(--border)}
+.repair-section-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.repair-count{background:var(--accent-dim);color:var(--accent);border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700}
+.repair-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.repair-card:last-child{margin-bottom:0}
+.repair-card-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);gap:8px}
+.repair-date{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--accent);letter-spacing:0.04em}
+.repair-tech{font-size:12px;color:var(--muted)}
+.repair-km{font-size:12px;color:var(--muted);margin-left:auto;white-space:nowrap}
+.repair-body{padding:10px 14px;display:flex;flex-direction:column;gap:8px}
+.repair-field-label{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:2px;font-family:'Barlow Condensed',sans-serif}
+.repair-field-value{font-size:14px;color:var(--text);font-weight:500;line-height:1.4}
+.repair-cost{display:inline-block;background:var(--accent-dim);color:var(--accent);border-radius:6px;padding:3px 10px;font-size:13px;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.04em}
+.no-repairs{text-align:center;padding:16px;color:var(--muted);font-size:13px}
 </style>
 </head>
 <body>
@@ -136,6 +152,7 @@ header{padding:20px 20px 0;display:flex;align-items:center;gap:10px}
       <div class="modal-field"><label>Next Service Due Column</label><input id="cfg-next" type="text"></div>
       <div class="modal-field"><label>Notes / Any Issue Column</label><input id="cfg-notes" type="text"></div>
       <div class="modal-field"><label>Odometer Photo Column</label><input id="cfg-photo" type="text"></div>
+      <div class="modal-field"><label>Repair Log Tab Name</label><input id="cfg-rtab" type="text"></div>
       <div class="modal-actions">
         <button class="btn-cancel" onclick="closeConfig()">Cancel</button>
         <button class="btn-save" onclick="saveConfig()">Save</button>
@@ -151,6 +168,7 @@ function defaultCfg() {
   return {
     sheetId:   '1MqdzUn8pkuW8_mER_7p4mPoa-K9cRhiqX9x1QK3CU_Y',
     sheetName: 'Form Responses 1',
+    repairTab: 'Repair Logs',
     cols: {
       plate:       'Vehicle Number',
       owner:       'Rider Name',
@@ -192,6 +210,7 @@ function openConfig() {
   document.getElementById('cfg-next').value  = c.cols.nextService;
   document.getElementById('cfg-notes').value = c.cols.notes;
   document.getElementById('cfg-photo').value = c.cols.photo;
+  document.getElementById('cfg-rtab').value  = c.repairTab || 'Repair Logs';
   document.getElementById('modal').style.display = 'flex';
 }
 function closeConfig() { document.getElementById('modal').style.display = 'none'; }
@@ -262,6 +281,65 @@ function openLightbox(url, cap) {
   document.body.appendChild(lb);
 }
 
+async function fetchRepairs(sheetId, repairTab, plate) {
+  try {
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(repairTab)}`;
+    const r = await fetch(url);
+    if (!r.ok) return [];
+    const t = await r.text();
+    const json = JSON.parse(t.substring(47, t.length - 2));
+    const cols = json.table.cols.map(c => c.label || c.id);
+    const rows = json.table.rows.map(r =>
+      Object.fromEntries(cols.map((c,i) => [c, r.c && r.c[i] ? (r.c[i].f || r.c[i].v || '') : '']))
+    );
+    return rows.filter(r => String(r['Vehicle Number']||'').trim().toUpperCase() === plate);
+  } catch(e) { return []; }
+}
+
+function renderRepairLog(repairs) {
+  if (!repairs.length) {
+    return `<div class="repair-section">
+      <div class="repair-section-title">Repair history</div>
+      <div class="no-repairs">No repair records found</div>
+    </div>`;
+  }
+  // Sort newest first
+  const sorted = [...repairs].sort((a,b) => {
+    const da = new Date(a['Date of Visit']||0);
+    const db = new Date(b['Date of Visit']||0);
+    return db - da;
+  });
+  const cards = sorted.map(r => {
+    const date    = fmtDate(r['Date of Visit']) || r['Date of Visit'] || '—';
+    const work    = r['Work Performed'] || '';
+    const parts   = r['Parts Replaced'] || '';
+    const km      = r['KM at visit'] || '';
+    const tech    = r['Technician Name'] || '';
+    const cost    = r['Cost/s'] || '';
+    const notes   = r['Notes'] || '';
+    return `<div class="repair-card">
+      <div class="repair-card-header">
+        <div>
+          <div class="repair-date">${date}</div>
+          ${tech ? `<div class="repair-tech">${tech}</div>` : ''}
+        </div>
+        ${km ? `<div class="repair-km">${km} KM</div>` : ''}
+      </div>
+      <div class="repair-body">
+        ${work  ? `<div><div class="repair-field-label">Work performed</div><div class="repair-field-value">${work}</div></div>` : ''}
+        ${parts ? `<div><div class="repair-field-label">Parts replaced</div><div class="repair-field-value">${parts}</div></div>` : ''}
+        ${cost  ? `<div><div class="repair-field-label">Cost</div><div class="repair-cost">${cost}</div></div>` : ''}
+        ${notes ? `<div><div class="repair-field-label">Notes</div><div class="repair-field-value">${notes}</div></div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div class="repair-section">
+    <div class="repair-section-title">Repair history <span class="repair-count">${repairs.length}</span></div>
+    ${cards}
+  </div>`;
+}
+
 async function doSearch() {
   const plate = document.getElementById('plate-input').value.trim().toUpperCase();
   if (!plate) return;
@@ -278,16 +356,17 @@ async function doSearch() {
       String(r[cfg.cols.plate] || '').trim().toUpperCase() === plate
     );
     if (!match) { setStatus(''); renderNotFound(plate); return; }
+    const repairs = await fetchRepairs(cfg.sheetId, cfg.repairTab || 'Repair Logs', plate);
     addRecent(plate);
     renderRecent();
     setStatus('');
-    renderResult(match, plate, cfg.cols);
+    renderResult(match, plate, cfg.cols, repairs);
   } catch(e) {
     setStatus('Error: ' + e.message);
   }
 }
 
-function renderResult(row, plate, cols) {
+function renderResult(row, plate, cols, repairs) {
   const g = k => String(row[cols[k]] || '').trim();
   const isOverdue = g('nextService') && new Date(g('nextService')) < new Date();
 
@@ -332,7 +411,9 @@ function renderResult(row, plate, cols) {
       </div>
       <div class="fields">${rows}</div>
       ${photoHtml}
-    </div>`;
+      ${renderRepairLog(repairs || [])}
+    </div>`;"
+
 }
 
 function renderNotFound(plate) {
