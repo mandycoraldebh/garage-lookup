@@ -159,7 +159,7 @@ function defaultCfg() {
       km:          'KM reading',
       nextService: '',
       notes:       'Any issue',
-      photo:       'Odometer pic'
+      photo:       ''
     }
   };
 }
@@ -207,7 +207,7 @@ function saveConfig() {
       km:          document.getElementById('cfg-km').value.trim(),
       nextService: document.getElementById('cfg-next').value.trim(),
       notes:       document.getElementById('cfg-notes').value.trim(),
-      photo:       document.getElementById('cfg-photo').value.trim()
+      photo:       ''
     }
   });
   closeConfig();
